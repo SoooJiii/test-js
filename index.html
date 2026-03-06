@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test JS</title>
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    padding:40px;
+}
+input,button{
+    padding:8px 12px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>My First GitHub Site 🚀</h1>
+
+<input type="text" id="name_input" placeholder="이름 입력">
+<button id="btn">인사하기</button>
+
+<script>
+
+document.getElementById("btn").addEventListener("click", function(){
+
+    const name = document.getElementById("name_input").value;
+
+    if(name === ""){
+        alert("이름을 입력하세요!");
+        return;
+    }
+
+    alert(name + "님 안녕하세요!");
+
+});
+
+</script>
+
+</body>
+</html>
