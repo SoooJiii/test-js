@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>숫자 맞추기 게임</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .wrap {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 32px 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    input {
+      width: 120px;
+      padding: 10px;
+      font-size: 16px;
+      text-align: center;
+      margin-right: 8px;
+    }
+
+    button {
+      padding: 10px 14px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 6px;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      min-height: 28px;
+    }
+
+    .info {
+      margin-top: 10px;
+      color: #666;
+    }
+
+    .history {
+      margin-top: 16px;
+      color: #444;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎯 숫자 맞추기 게임</h1>
+    <p>1부터 100 사이 숫자를 맞혀봐!</p>
+
+    <div>
+      <input type="number" id="guessInput" min="1" max="100" placeholder="숫자 입력" />
+      <button id="guessBtn">확인</button>
+    </div>
+
+    <div class="message" id="message">게임 시작!</div>
+    <div class="info" id="chanceText">남은 기회: 7번</div>
+    <div class="history" id="history">입력 기록: 없음</div>
+
+    <button id="resetBtn">다시 시작</button>
+  </div>
+
+  <script>
+    let answer = Math.floor(Math.random() * 100) + 1;
+    let chances = 7;
+    let historyList = [];
+
+    const guessInput = document.getElementById("guessInput");
+    const guessBtn = document.getElementById("guessBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const message = document.getElementById("message");
+    const chanceText = document.getElementById("chanceText");
+    const history = document.getElementById("history");
+
+    function updateHistory() {
+      history.textContent = historyList.length
+        ? "입력 기록: " + historyList.join(", ")
+        : "입력 기록: 없음";
+    }
+
+    function endGame(text) {
+      message.textContent = text;
+      guessInput.disabled = true;
+      guessBtn.disabled = true;
+    }
+
+    function checkGuess() {
+      const value = Number(guessInput.value);
+
+      if (!value || value < 1 || value > 100) {
+        alert("1부터 100 사이 숫자를 입력해줘!");
+        guessInput.focus();
+        return;
+      }
+
+      if (historyList.includes(value)) {
+        alert("이미 입력한 숫자야!");
+        guessInput.value = "";
+        guessInput.focus();
+        return;
+      }
+
+      historyList.push(value);
+      updateHistory();
+
+      chances--;
+      chanceText.textContent = `남은 기회: ${chances}번`;
+
+      if (value === answer) {
+        endGame(`정답이다! 🎉 (${answer})`);
+        return;
+      }
+
+      if (chances === 0) {
+        endGame(`실패! 정답은 ${answer}였어 😢`);
+        return;
+      }
+
+      if (value < answer) {
+        message.textContent = "UP! 더 큰 숫자야 ⬆️";
+      } else {
+        message.textContent = "DOWN! 더 작은 숫자야 ⬇️";
+      }
+
+      guessInput.value = "";
+      guessInput.focus();
+    }
+
+    function resetGame() {
+      answer = Math.floor(Math.random() * 100) + 1;
+      chances = 7;
+      historyList = [];
+
+      message.textContent = "게임 시작!";
+      chanceText.textContent = "남은 기회: 7번";
+      history.textContent = "입력 기록: 없음";
+
+      guessInput.disabled = false;
+      guessBtn.disabled = false;
+      guessInput.value = "";
+      guessInput.focus();
+    }
+
+    guessBtn.addEventListener("click", checkGuess);
+
+    guessInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        checkGuess();
+      }
+    });
+
+    resetBtn.addEventListener("click", resetGame);
+  </script>
+</body>
+</html>
