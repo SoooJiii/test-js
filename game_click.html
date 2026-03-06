@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>타이밍 게임</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 0;
+    }
+
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 30px;
+    }
+
+    p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .gauge {
+      position: relative;
+      width: 100%;
+      height: 34px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 30px 0 20px;
+    }
+
+    .target-zone {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: #86efac;
+      border-radius: 999px;
+    }
+
+    .marker {
+      position: absolute;
+      top: 0;
+      width: 14px;
+      height: 100%;
+      background: #ef4444;
+      border-radius: 999px;
+      transform: translateX(-50%);
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 6px;
+    }
+
+    #hitBtn {
+      background: #2563eb;
+      color: white;
+    }
+
+    #resetBtn {
+      background: #e5e7eb;
+    }
+
+    .result {
+      margin-top: 24px;
+      font-size: 22px;
+      font-weight: bold;
+      min-height: 32px;
+    }
+
+    .score {
+      margin-top: 10px;
+      color: #444;
+      font-size: 18px;
+    }
+
+    .small {
+      margin-top: 14px;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>⏱ 타이밍 게임</h1>
+    <p>
+      빨간 바가 움직일 때<br>
+      초록 구간 안에 들어왔을 때 <b>딱 클릭</b>해봐!
+    </p>
+
+    <div class="gauge" id="gauge">
+      <div class="target-zone" id="targetZone"></div>
+      <div class="marker" id="marker"></div>
+    </div>
+
+    <button id="hitBtn">지금 클릭!</button>
+    <button id="resetBtn">다시 시작</button>
+
+    <div class="result" id="result">게임 시작!</div>
+    <div class="score" id="score">점수: 0</div>
+    <div class="small">정확히 가운데에 가까울수록 점수가 높아져</div>
+  </div>
+
+  <script>
+    const gauge = document.getElementById("gauge");
+    const targetZone = document.getElementById("targetZone");
+    const marker = document.getElementById("marker");
+    const hitBtn = document.getElementById("hitBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const result = document.getElementById("result");
+    const scoreText = document.getElementById("score");
+
+    let position = 0;
+    let direction = 1;
+    let speed = 3.5;
+    let animationId = null;
+    let playing = true;
+    let totalScore = 0;
+
+    let zoneStart = 0;
+    let zoneWidth = 0;
+
+    function setupZone() {
+      const gaugeWidth = gauge.clientWidth;
+
+      zoneWidth = 90 + Math.random() * 30; // 90~120
+      zoneStart = 80 + Math.random() * (gaugeWidth - zoneWidth - 160);
+
+      targetZone.style.left = `${zoneStart}px`;
+      targetZone.style.width = `${zoneWidth}px`;
+    }
+
+    function moveMarker() {
+      const gaugeWidth = gauge.clientWidth;
+      position += speed * direction;
+
+      if (position >= gaugeWidth) {
+        position = gaugeWidth;
+        direction = -1;
+      } else if (position <= 0) {
+        position = 0;
+        direction = 1;
+      }
+
+      marker.style.left = `${position}px`;
+      animationId = requestAnimationFrame(moveMarker);
+    }
+
+    function startGame() {
+      cancelAnimationFrame(animationId);
+      position = 0;
+      direction = 1;
+      playing = true;
+      result.textContent = "게임 시작!";
+      hitBtn.disabled = false;
+      setupZone();
+      moveMarker();
+    }
+
+    function calculateScore() {
+      const zoneCenter = zoneStart + zoneWidth / 2;
+      const distance = Math.abs(position - zoneCenter);
+      const maxDistance = zoneWidth / 2;
+
+      if (position < zoneStart || position > zoneStart + zoneWidth) {
+        return 0;
+      }
+
+      const ratio = 1 - distance / maxDistance;
+      return Math.max(10, Math.round(ratio * 100));
+    }
+
+    hitBtn.addEventListener("click", function () {
+      if (!playing) return;
+
+      playing = false;
+      hitBtn.disabled = true;
+      cancelAnimationFrame(animationId);
+
+      const gained = calculateScore();
+
+      if (gained === 0) {
+        result.textContent = "실패! 😢 초록 구간을 놓쳤어";
+      } else if (gained >= 90) {
+        result.textContent = `대박!! 🔥 +${gained}점`;
+      } else if (gained >= 70) {
+        result.textContent = `성공! 😎 +${gained}점`;
+      } else {
+        result.textContent = `아슬아슬 성공! 😆 +${gained}점`;
+      }
+
+      totalScore += gained;
+      scoreText.textContent = `점수: ${totalScore}`;
+    });
+
+    resetBtn.addEventListener("click", function () {
+      startGame();
+    });
+
+    window.addEventListener("load", startGame);
+    window.addEventListener("resize", startGame);
+  </script>
+</body>
+</html>
